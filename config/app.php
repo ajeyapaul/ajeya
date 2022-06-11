@@ -185,6 +185,9 @@ return [
         /*
          * Package Service Providers...
          */
+		Ajeya\Blog\BlogServiceProvider::class,
+        Ajeya\Crm\CrmServiceProvider::class,
+        Ajeya\Theme\ThemeServiceProvider::class,
 
         /*
          * Application Service Providers...

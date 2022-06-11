@@ -1,0 +1,92 @@
+version: '3'
+
+
+networks:
+    ajeya:
+
+services:
+
+    nginx:
+        image: nginx:stable-alpine
+
+        container_name: ${APP_NAME}_nginx
+        restart: unless-stopped
+        ports:
+          - "8080:80"
+          - "8143:143"
+
+        volumes:
+            - ./:/var/www/html
+            - ./nginx/default.conf:/etc/nginx/conf.d/deafault.conf
+            #- ./docker/nginx/default.conf:/etc/nginx/conf.d/deafault.conf:rw
+            #- ./docker/logs/nginx:/var/logs/nginx:rw
+
+        links:
+            - php
+        depends_on:
+
+            - php
+            - mysql
+            - postgres
+
+        networks:
+            - ajeya
+
+    mysql:
+        image: mysql:5.7.22
+        container_name: ${APP_NAME}_mysql
+        restart: unless-stopped
+        tty: true
+        ports:
+            - "4306:3306"
+        volumes:
+            - ./mysql:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE : homestead
+            MYSQL_USER : homestead
+            MYSQL_PASSWORD : secret
+            MYSQL_ROOT_PASSWORD: secret
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        networks:
+            - ajeya
+
+
+    postgres:
+        image: postgres:12.3-alpine
+        container_name: ${APP_NAME}_postgres
+        restart: unless-stopped
+        tty: true
+        ports:
+            - "5433:5432"
+        volumes:
+            - ./docker/postgres:/var/lib/postgresql/data
+        environment:
+            POSTGRES_DB : ${DB_DATABASE}
+            POSTGRES_USER : ${DB_USERNAME}
+            POSTGRES_PASSWORD : ${DB_PASSWORD}
+            POSTGRES_HOST_AUTH_METHOD: "trust"
+        networks:
+            - ajeya       -
+
+
+
+    # PHP-FPM Service
+    php:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name:  ${APP_NAME}_php
+        restart: unless-stopped
+        tty: true
+        volumes:
+          - ./:/var/www/html
+          #- ./docker-files/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+        ports:
+          -  "9000:9000"
+          #-  "9001:9000"
+
+        networks:
+            - ajeya
+            #- webapp
+
